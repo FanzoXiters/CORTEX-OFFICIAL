@@ -102,12 +102,14 @@ def build_html(receiver_email, license_key):
                 </b>
             
 
-<p style="font-size:13px;color:#555;margin-top:10px;">
+
+              </div>
+
+              <p style="font-size:13px;color:#555;margin-top:10px;">
   Silahkan klik link berikut untuk
   <span style="color:#2563eb;">tutorial pemasangan</span>,
   dan untuk aplikasi tambahan.
 </p>
-              </div>
 
               <div style="margin:20px 0;">
                 <a href="https://example.com"
