@@ -12,10 +12,10 @@ app = Flask(__name__)
 API_KEY = os.getenv("RESEND_API_KEY")
 
 # ================= FIREBASE INIT =================
-cred = credentials.Certificate("firebase.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 
 firebase_admin.initialize_app(cred, {
-    "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
+    "databaseURL": "https://cortex-project-e8bfd-default-rtdb.firebaseio.com/"
 })
 
 # ================= LICENSE GENERATOR =================
