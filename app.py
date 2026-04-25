@@ -95,10 +95,13 @@ def send_email():
         html = build_html(to)
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(EMAIL, APP_PASS)
-            server.send_message(msg)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+    print("CONNECT...")
+    server.starttls()
+    print("LOGIN...")
+    server.login(EMAIL, APP_PASS)
+    print("SEND...")
+    server.send_message(msg)
 
         return jsonify({"status": "sent"})
 
