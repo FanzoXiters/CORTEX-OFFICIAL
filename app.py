@@ -13,16 +13,13 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise Exception("SUPABASE ENV belum lengkap")
-
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ================= LICENSE GENERATOR =================
+# ================= LICENSE =================
 def generate_key():
     return "CX_" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
-# ================= HTML (TIDAK DIUBAH) =================
+# ================= HTML KAMU (TIDAK DIUBAH UI SAMA SEKALI) =================
 def build_html(receiver_email, license_key):
     return f"""
 <html>
@@ -142,39 +139,7 @@ def build_html(receiver_email, license_key):
 def home():
     return "API Running 🚀"
 
-# ================= GENERATE + SAVE =================
-@app.route("/generate", methods=["POST"])
-def generate():
-    try:
-        data = request.get_json() or {}
-        email = data.get("email")
-        device_id = data.get("device_id", "")
-
-        if not email:
-            return jsonify({"error": "email kosong"}), 400
-
-        license_key = generate_key()
-        now = int(time.time())
-
-        result = supabase.table("licenses").insert({
-            "license": license_key,
-            "email": email,
-            "device_id": device_id,
-            "status": "active",
-            "created": now
-        }).execute()
-
-        return jsonify({
-            "status": "success",
-            "license": license_key,
-            "db": result.data
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# ================= SEND EMAIL + SAVE SUPABASE (FIX PENTING) =================
+# ================= SEND EMAIL (FIX UTAMA) =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
@@ -184,9 +149,8 @@ def send_email():
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
-        # 🔥 KEY SEKALI SAJA (INI YANG FIX MASALAH KAMU)
+        # 🔥 KEY SEKALI SAJA (FIX ERROR KAMU SEBELUMNYA)
         license_key = generate_key()
-        now = int(time.time())
 
         # SIMPAN KE SUPABASE
         supabase.table("licenses").insert({
@@ -194,7 +158,7 @@ def send_email():
             "email": to,
             "device_id": "",
             "status": "active",
-            "created": now
+            "created": int(time.time())
         }).execute()
 
         html = build_html(to, license_key)
@@ -214,10 +178,7 @@ def send_email():
         )
 
         if not res.ok:
-            return jsonify({
-                "status": "failed",
-                "error": res.text
-            }), 500
+            return jsonify({"status": "failed", "error": res.text}), 500
 
         return jsonify({
             "status": "sent",
@@ -240,6 +201,8 @@ def login():
         if not license_key or not device_id:
             return jsonify({"status": "error"}), 400
 
+        license_key = license_key.strip().upper()
+
         result = supabase.table("licenses").select("*").eq("license", license_key).execute()
 
         if not result.data:
@@ -252,7 +215,6 @@ def login():
             supabase.table("licenses").update({
                 "device_id": device_id
             }).eq("license", license_key).execute()
-
             return jsonify({"status": "success", "msg": "first bind"})
 
         if saved_device != device_id:
