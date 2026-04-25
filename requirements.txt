@@ -1,4 +1,5 @@
 flask
 requests
-firebase-admin
+supabase
+gunicornebase-admin
 gunicorn
