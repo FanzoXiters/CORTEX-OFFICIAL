@@ -10,23 +10,23 @@ API_KEY = os.getenv("RESEND_API_KEY")
 def build_html(receiver_email):
     return f"""
 <html>
-  <body style="margin:0;padding:0;background:#000000;font-family:Arial,sans-serif;">
+  <body style="margin:0;padding:0;background:#0C110E;font-family:Arial,sans-serif;">
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#000000;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0C110E;">
       <tr>
         <td align="center" style="padding:30px 10px;">
 
           <!-- CARD -->
           <table width="500" cellpadding="0" cellspacing="0"
-            style="background:#000000;border-radius:14px;padding:25px;">
+            style="background:#0C110E;border-radius:14px;padding:25px;">
 
             <!-- TITLE -->
             <tr>
               <td align="center">
-                <h2 style="margin:0;color:#ffffff;font-weight:600;">
+                <h2 style="margin:0;color:#E9FBE2;font-weight:600;">
                   Download Verification Code
                 </h2>
-                <p style="margin:8px 0 15px;color:#9aa0a6;font-size:13px;">
+                <p style="margin:8px 0 15px;color:#1FB269;font-size:13px;">
                   {receiver_email}
                 </p>
                 <hr style="border:none;border-top:1px solid #222;">
@@ -35,7 +35,7 @@ def build_html(receiver_email):
 
             <!-- CONTENT -->
             <tr>
-              <td style="text-align:center;padding:15px 10px;color:#d0d0d0;font-size:14px;line-height:1.6;">
+              <td style="text-align:center;padding:15px 10px;color:#A7B0A8;font-size:14px;line-height:1.6;">
 
                 <p>
                   Terima kasih atas permintaan Anda untuk mengakses file kami.
@@ -51,7 +51,7 @@ def build_html(receiver_email):
                             background:#111;
                             border-radius:8px;
                             font-size:13px;
-                            color:#aaa;">
+                            color:#A7B0A8;">
                   Key License:<br>
                   <b style="color:#fff;">
                     CX_{receiver_email[:5].upper()}_X9Z81A
@@ -68,7 +68,7 @@ def build_html(receiver_email):
                 <!-- BUTTON -->
                 <div style="margin:20px 0;">
                   <a href="https://example.com"
-                     style="background:#3b82f6;
+                     style="background:#1FB269;
                             color:#ffffff;
                             padding:14px 32px;
                             text-decoration:none;
@@ -79,7 +79,7 @@ def build_html(receiver_email):
                   </a>
                 </div>
 
-                <p style="font-size:12px;color:#777;">
+                <p style="font-size:12px;color:#A7B0A8;">
                   Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
                 </p>
 
