@@ -99,7 +99,7 @@ def send_email():
                 "Content-Type": "application/json"
             },
             json={
-                "from": "CORTEX OFFICIAL <onboarding@resend.dev>",
+                "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
                 "to": [to],
                 "subject": "Download Verification Code",
                 "html": html
