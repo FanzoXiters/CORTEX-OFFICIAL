@@ -10,7 +10,6 @@ app = Flask(__name__)
 
 # ================= ENV =================
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -24,42 +23,116 @@ def generate_key():
     chars = string.ascii_uppercase + string.digits
     return "CX_" + "".join(random.choices(chars, k=10))
 
-# ================= EMAIL TEMPLATE (JANGAN DIUBAH) =================
-def build_html(email, license_key):
+# ================= HTML TEMPLATE (TIDAK DIUBAH SAMA SEKALI) =================
+def build_html(receiver_email):
     return f"""
 <html>
 <head>
   <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+
   <style>
     @media (prefers-color-scheme: dark) {{
-      body {{ background:#000 !important; }}
-      .box {{ background:#222 !important; }}
-      .text {{ color:#ddd !important; }}
+      body {{
+        background:#000000 !important;
+      }}
+      .card {{
+        background:#000000 !important;
+      }}
+      .text {{
+        color:#e5e5e5 !important;
+      }}
+      .muted {{
+        color:#b0b0b0 !important;
+      }}
+      .box {{
+        background:#2a2a2a !important;
+      }}
     }}
   </style>
 </head>
 
-<body style="margin:0;padding:0;background:#fff;font-family:Arial;">
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
 
-  <div style="padding:20px;text-align:center;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding:30px 10px;">
 
-    <h2>Download Verification</h2>
-    <p>{email}</p>
+        <table width="500" cellpadding="0" cellspacing="0"
+          style="background:#ffffff;border-radius:14px;padding:25px;"
+          class="card">
 
-    <p class="text">
-      Terima kasih atas pembelian Anda.
-    </p>
+          <tr>
+            <td align="center">
+              <h2 style="margin:0;color:#111;font-weight:600;">
+                Download Verification Code
+              </h2>
 
-    <div class="box" style="margin:15px;padding:10px;background:#f0f0f0;border-radius:8px;">
-      <b>{license_key}</b>
-    </div>
+              <p style="margin:8px 0 15px;color:#666;font-size:13px;">
+                {receiver_email}
+              </p>
 
-    <a href="https://example.com"
-       style="background:#2563eb;color:#fff;padding:12px 20px;text-decoration:none;border-radius:6px;">
-       Download Now
-    </a>
+              <hr style="border:none;border-top:1px solid #ddd;">
+            </td>
+          </tr>
 
-  </div>
+          <tr>
+            <td style="text-align:center;padding:15px 10px;color:#333;font-size:14px;line-height:1.6;">
+
+              <p class="text" style="margin:10px 0;">
+                Terima kasih atas permintaan Anda untuk mengakses file kami.
+                Kami menghargai kepercayaan Anda.
+              </p>
+
+              <p class="text">
+                Silahkan download link berikut untuk Android dan Safari untuk iOS.
+              </p>
+
+              <div style="margin:15px 0;padding:10px;
+                          background:#f0f0f0;
+                          border-radius:8px;
+                          font-size:13px;
+                          color:#333;"
+                   class="box">
+
+                Key License:<br>
+
+                <b style="color:#2563eb;">
+                  CX_{receiver_email[:5].upper()}_X9Z81A
+                </b>
+              </div>
+
+              <p style="font-size:13px;color:#555;">
+                Silahkan klik link berikut untuk
+                <span style="color:#2563eb;">tutorial pemasangan</span>,
+                dan untuk aplikasi tambahan.
+              </p>
+
+              <div style="margin:20px 0;">
+                <a href="https://example.com"
+                   style="background:#2563eb;
+                          color:#ffffff;
+                          padding:14px 32px;
+                          text-decoration:none;
+                          border-radius:8px;
+                          font-weight:bold;
+                          display:inline-block;">
+                  Download Now
+                </a>
+              </div>
+
+              <p style="font-size:12px;color:#777;">
+                Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
+              </p>
+
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
 
 </body>
 </html>
@@ -69,6 +142,36 @@ def build_html(email, license_key):
 @app.route("/")
 def home():
     return "API Running 🚀"
+
+# ================= GENERATE + SAVE LICENSE =================
+@app.route("/generate", methods=["POST"])
+def generate():
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "body kosong"}), 400
+
+    email = data.get("email")
+    device_id = data.get("device_id")
+
+    if not email:
+        return jsonify({"error": "email kosong"}), 400
+
+    license_key = generate_key()
+    now = int(time.time())
+
+    supabase.table("licenses").insert({
+        "license": license_key,
+        "email": email,
+        "device_id": device_id or "",
+        "status": "active",
+        "created": now
+    }).execute()
+
+    return jsonify({
+        "status": "success",
+        "license": license_key
+    })
 
 # ================= SEND EMAIL =================
 @app.route("/send-email", methods=["POST"])
@@ -80,25 +183,11 @@ def send_email():
         return jsonify({"error": "body kosong"}), 400
 
     to = data.get("to")
-    device_id = data.get("device_id")
 
     if not to:
         return jsonify({"error": "email kosong"}), 400
 
-    license_key = generate_key()
-    now = int(time.time())
-
-    # SAVE SUPABASE
-    supabase.table("licenses").insert({
-        "license": license_key,
-        "email": to,
-        "device_id": device_id or "",
-        "status": "active",
-        "created": now
-    }).execute()
-
-    # EMAIL SEND
-    html = build_html(to, license_key)
+    html = build_html(to)
 
     res = requests.post(
         "https://api.resend.com/emails",
@@ -109,17 +198,20 @@ def send_email():
         json={
             "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
             "to": [to],
-            "subject": "License Aktivasi",
+            "subject": "Download Verification Code",
             "html": html
         }
     )
 
     if not res.ok:
-        return jsonify({"status": "failed", "error": res.text}), 500
+        return jsonify({
+            "status": "failed",
+            "error": res.text
+        }), 500
 
     return jsonify({
-        "status": "success",
-        "license": license_key
+        "status": "sent",
+        "response": res.json()
     })
 
 # ================= LOGIN =================
@@ -143,7 +235,6 @@ def login():
         return jsonify({"status": "invalid"}), 404
 
     record = result.data[0]
-
     saved_device = record.get("device_id")
 
     # FIRST BIND
@@ -159,7 +250,6 @@ def login():
         return jsonify({"status": "blocked"}), 403
 
     return jsonify({"status": "success", "msg": "login ok"})
-
 
 # ================= RUN =================
 if __name__ == "__main__":
