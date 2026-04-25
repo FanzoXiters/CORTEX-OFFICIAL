@@ -62,18 +62,35 @@ def build_html(receiver_email):
 def home():
     return "API Running 🚀"
 
+# 🔍 DEBUG API KEY
+@app.route("/debug-key")
+def debug_key():
+    return {
+        "key": API_KEY
+    }
+
+# ================= SEND EMAIL =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
+        print("===== DEBUG START =====")
+        print("API KEY:", API_KEY)
+
         data = request.get_json()
+        print("BODY:", data)
+
         if not data:
             return jsonify({"error": "body kosong"}), 400
 
         to = data.get("to")
+        print("TO:", to)
+
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
         html = build_html(to)
+
+        print("REQUEST KE RESEND...")
 
         res = requests.post(
             "https://api.resend.com/emails",
@@ -90,13 +107,24 @@ def send_email():
             timeout=10
         )
 
+        print("STATUS CODE:", res.status_code)
+        print("RESPONSE:", res.text)
+
+        # 🔥 HANDLE ERROR BIAR JELAS
+        if res.status_code != 200:
+            return jsonify({
+                "status": "failed",
+                "code": res.status_code,
+                "response": res.text
+            }), 500
+
         return jsonify({
             "status": "sent",
-            "res": res.json()
+            "response": res.json()
         })
 
     except Exception as e:
-        print("ERROR:", e)
+        print("ERROR DETAIL:", e)
         return jsonify({"error": str(e)}), 500
 
 
