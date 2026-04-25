@@ -64,7 +64,8 @@ def build_html(receiver_email):
 @app.route("/")
 def home():
     return "API Running 🚀"
-    @app.route("/debug")
+
+@app.route("/debug")
 def debug():
     return {
         "email": EMAIL,
@@ -74,7 +75,10 @@ def debug():
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
-        data = request.json
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "body kosong"}), 400
+
         to = data.get("to")
 
         if not to:
@@ -99,8 +103,9 @@ def send_email():
         return jsonify({"status": "sent"})
 
     except Exception as e:
+        print("ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
-# ================= RUN (WAJIB BUAT RAILWAY) =================
+# ================= RUN =================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
