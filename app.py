@@ -13,16 +13,26 @@ app = Flask(__name__)
 # ================= ENV =================
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
-# ================= FIREBASE INIT (RAILWAY SAFE) =================
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
+FIREBASE_PRIVATE_KEY = os.getenv("FIREBASE_PRIVATE_KEY")
+FIREBASE_CLIENT_EMAIL = os.getenv("FIREBASE_CLIENT_EMAIL")
+FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
+
+# ================= VALIDASI ENV (BIAR TIDAK CRASH) =================
+if not all([FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, FIREBASE_DB_URL]):
+    raise Exception("❌ Firebase ENV belum lengkap di Railway")
+
+# ================= FIREBASE INIT =================
 cred = credentials.Certificate({
     "type": "service_account",
-    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
-    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
-    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+    "project_id": FIREBASE_PROJECT_ID,
+    "private_key": FIREBASE_PRIVATE_KEY.replace("\\n", "\n"),
+    "client_email": FIREBASE_CLIENT_EMAIL,
+    "token_uri": "https://oauth2.googleapis.com/token"
 })
 
 firebase_admin.initialize_app(cred, {
-    "databaseURL": os.getenv("FIREBASE_DB_URL")
+    "databaseURL": FIREBASE_DB_URL
 })
 
 # ================= LICENSE GENERATOR =================
@@ -76,11 +86,14 @@ def build_html(email, license_key):
 def home():
     return "API Running 🚀"
 
-# ================= SEND EMAIL + CREATE LICENSE =================
+# ================= SEND EMAIL =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
 
     data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "body kosong"}), 400
 
     to = data.get("to")
     device_id = data.get("device_id")
@@ -88,11 +101,10 @@ def send_email():
     if not to:
         return jsonify({"error": "email kosong"}), 400
 
-    # generate license
     license_key = generate_key()
     now = int(time.time())
 
-    # save firebase
+    # SAVE FIREBASE
     db.reference("licenses").child(license_key).set({
         "email": to,
         "device_id": device_id if device_id else "",
@@ -100,7 +112,7 @@ def send_email():
         "created": now
     })
 
-    # send email
+    # EMAIL
     html = build_html(to, license_key)
 
     res = requests.post(
@@ -128,11 +140,14 @@ def send_email():
         "license": license_key
     })
 
-# ================= LOGIN + DEVICE LOCK =================
+# ================= LOGIN =================
 @app.route("/login", methods=["POST"])
 def login():
 
     data = request.get_json()
+
+    if not data:
+        return jsonify({"status": "error"}), 400
 
     license_key = data.get("license")
     device_id = data.get("device_id")
@@ -153,7 +168,7 @@ def login():
         ref.update({"device_id": device_id})
         return jsonify({"status": "success", "msg": "first bind"})
 
-    # DEVICE CHECK
+    # DEVICE LOCK
     if saved_device != device_id:
         return jsonify({"status": "blocked"}), 403
 
