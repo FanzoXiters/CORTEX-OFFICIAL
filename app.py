@@ -20,10 +20,9 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= LICENSE GENERATOR =================
 def generate_key():
-    chars = string.ascii_uppercase + string.digits
-    return "CX_" + "".join(random.choices(chars, k=10))
+    return "CX_" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
-# ================= HTML TEMPLATE (UI TIDAK DIUBAH) =================
+# ================= HTML (TIDAK DIUBAH) =================
 def build_html(receiver_email, license_key):
     return f"""
 <html>
@@ -100,16 +99,13 @@ def build_html(receiver_email, license_key):
                 <b style="color:#2563eb;">
                   {license_key}
                 </b>
-            
-
-
               </div>
 
               <p style="font-size:13px;color:#555;margin-top:10px;">
-  Silahkan klik link berikut untuk
-  <span style="color:#2563eb;">tutorial pemasangan</span>,
-  dan untuk aplikasi tambahan.
-</p>
+                Silahkan klik link berikut untuk
+                <span style="color:#2563eb;">tutorial pemasangan</span>,
+                dan untuk aplikasi tambahan.
+              </p>
 
               <div style="margin:20px 0;">
                 <a href="https://example.com"
@@ -146,101 +142,127 @@ def build_html(receiver_email, license_key):
 def home():
     return "API Running 🚀"
 
-# ================= GENERATE =================
+# ================= GENERATE + SAVE =================
 @app.route("/generate", methods=["POST"])
 def generate():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email")
+        device_id = data.get("device_id", "")
 
-    data = request.get_json()
-    email = data.get("email")
-    device_id = data.get("device_id")
+        if not email:
+            return jsonify({"error": "email kosong"}), 400
 
-    if not email:
-        return jsonify({"error": "email kosong"}), 400
+        license_key = generate_key()
+        now = int(time.time())
 
-    license_key = generate_key()
-    now = int(time.time())
+        result = supabase.table("licenses").insert({
+            "license": license_key,
+            "email": email,
+            "device_id": device_id,
+            "status": "active",
+            "created": now
+        }).execute()
 
-    supabase.table("licenses").insert({
-        "license": license_key,
-        "email": email,
-        "device_id": device_id or "",
-        "status": "active",
-        "created": now
-    }).execute()
+        return jsonify({
+            "status": "success",
+            "license": license_key,
+            "db": result.data
+        })
 
-    return jsonify({
-        "status": "success",
-        "license": license_key
-    })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# ================= SEND EMAIL =================
+
+# ================= SEND EMAIL + SAVE SUPABASE (FIX PENTING) =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
+    try:
+        data = request.get_json() or {}
+        to = data.get("to")
 
-    data = request.get_json()
-    to = data.get("to")
+        if not to:
+            return jsonify({"error": "email kosong"}), 400
 
-    if not to:
-        return jsonify({"error": "email kosong"}), 400
+        # 🔥 KEY SEKALI SAJA (INI YANG FIX MASALAH KAMU)
+        license_key = generate_key()
+        now = int(time.time())
 
-    license_key = generate_key()  # 🔥 RANDOM KEY DI SINI
-    html = build_html(to, license_key)
+        # SIMPAN KE SUPABASE
+        supabase.table("licenses").insert({
+            "license": license_key,
+            "email": to,
+            "device_id": "",
+            "status": "active",
+            "created": now
+        }).execute()
 
-    res = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
-            "to": [to],
-            "subject": "Download Verification Code",
-            "html": html
-        }
-    )
+        html = build_html(to, license_key)
 
-    if not res.ok:
+        res = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
+                "to": [to],
+                "subject": "Download Verification Code",
+                "html": html
+            }
+        )
+
+        if not res.ok:
+            return jsonify({
+                "status": "failed",
+                "error": res.text
+            }), 500
+
         return jsonify({
-            "status": "failed",
-            "error": res.text
-        }), 500
+            "status": "sent",
+            "license": license_key
+        })
 
-    return jsonify({
-        "status": "sent",
-        "license": license_key
-    })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # ================= LOGIN =================
 @app.route("/login", methods=["POST"])
 def login():
+    try:
+        data = request.get_json() or {}
 
-    data = request.get_json()
+        license_key = data.get("license")
+        device_id = data.get("device_id")
 
-    license_key = data.get("license")
-    device_id = data.get("device_id")
+        if not license_key or not device_id:
+            return jsonify({"status": "error"}), 400
 
-    if not license_key or not device_id:
-        return jsonify({"status": "error"}), 400
+        result = supabase.table("licenses").select("*").eq("license", license_key).execute()
 
-    result = supabase.table("licenses").select("*").eq("license", license_key).execute()
+        if not result.data:
+            return jsonify({"status": "invalid"}), 404
 
-    if not result.data:
-        return jsonify({"status": "invalid"}), 404
+        record = result.data[0]
+        saved_device = record.get("device_id")
 
-    record = result.data[0]
-    saved_device = record.get("device_id")
+        if not saved_device:
+            supabase.table("licenses").update({
+                "device_id": device_id
+            }).eq("license", license_key).execute()
 
-    if not saved_device:
-        supabase.table("licenses").update({
-            "device_id": device_id
-        }).eq("license", license_key).execute()
-        return jsonify({"status": "success", "msg": "first bind"})
+            return jsonify({"status": "success", "msg": "first bind"})
 
-    if saved_device != device_id:
-        return jsonify({"status": "blocked"}), 403
+        if saved_device != device_id:
+            return jsonify({"status": "blocked"}), 403
 
-    return jsonify({"status": "success", "msg": "login ok"})
+        return jsonify({"status": "success", "msg": "login ok"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # ================= RUN =================
 if __name__ == "__main__":
