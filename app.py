@@ -1,13 +1,31 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import random
+import string
+
+import firebase_admin
+from firebase_admin import credentials, db
 
 app = Flask(__name__)
 
 API_KEY = os.getenv("RESEND_API_KEY")
 
-# ================= HTML TEMPLATE =================
-def build_html(receiver_email):
+# ================= FIREBASE INIT =================
+cred = credentials.Certificate("firebase.json")
+
+firebase_admin.initialize_app(cred, {
+    "databaseURL": "https://YOUR_PROJECT.firebaseio.com/"
+})
+
+# ================= LICENSE GENERATOR =================
+def generate_key():
+    chars = string.ascii_uppercase + string.digits
+    return "CX_" + "".join(random.choices(chars, k=10))
+
+# ================= HTML TEMPLATE (TIDAK DIUBAH UI) =================
+def build_html(receiver_email, license_key):
+
     return f"""
 <html>
 <head>
@@ -16,39 +34,25 @@ def build_html(receiver_email):
 
   <style>
     @media (prefers-color-scheme: dark) {{
-      body {{
-        background:#000000 !important;
-      }}
-      .card {{
-        background:#000000 !important;
-      }}
-      .text {{
-        color:#e5e5e5 !important;
-      }}
-      .muted {{
-        color:#b0b0b0 !important;
-      }}
-      .box {{
-        background:#2a2a2a !important;
-      }}
+      body {{ background:#000000 !important; }}
+      .card {{ background:#000000 !important; }}
+      .text {{ color:#e5e5e5 !important; }}
+      .box {{ background:#2a2a2a !important; }}
     }}
   </style>
 </head>
 
 <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
 
-  <table width="100%" cellpadding="0" cellspacing="0">
+  <table width="100%">
     <tr>
       <td align="center" style="padding:30px 10px;">
 
-        <table width="500" cellpadding="0" cellspacing="0"
-          style="background:#ffffff;border-radius:14px;padding:25px;"
-          class="card">
-
-          <!-- TITLE -->
+        <table width="500" style="background:#ffffff;border-radius:14px;padding:25px;">
           <tr>
             <td align="center">
-              <h2 style="margin:0;color:#111;font-weight:600;">
+
+              <h2 style="margin:0;color:#111;">
                 Download Verification Code
               </h2>
 
@@ -60,58 +64,30 @@ def build_html(receiver_email):
             </td>
           </tr>
 
-          <!-- CONTENT -->
           <tr>
-            <td style="text-align:center;padding:15px 10px;color:#333;font-size:14px;line-height:1.6;">
+            <td style="text-align:center;padding:15px;color:#333;font-size:14px;line-height:1.6;">
 
-              <p class="text" style="margin:10px 0;">
+              <p class="text">
                 Terima kasih atas permintaan Anda untuk mengakses file kami.
-                Kami menghargai kepercayaan Anda.
               </p>
 
               <p class="text">
-                Silahkan download link berikut untuk Android dan Safari untuk iOS.
+                Silahkan download aplikasi melalui link berikut.
               </p>
 
-              <!-- KEY -->
-              <div style="margin:15px 0;padding:10px;
-                          background:#f0f0f0;
-                          border-radius:8px;
-                          font-size:13px;
-                          color:#333;"
-                   class="box">
-
+              <!-- LICENSE -->
+              <div class="box" style="margin:15px 0;padding:10px;background:#f0f0f0;border-radius:8px;">
                 Key License:<br>
-
                 <b style="color:#2563eb;">
-                  CX_{receiver_email[:5].upper()}_X9Z81A
+                  {license_key}
                 </b>
               </div>
 
-              <!-- TUTORIAL -->
-              <p style="font-size:13px;color:#555;">
-                Silahkan klik link berikut untuk
-                <span style="color:#2563eb;">tutorial pemasangan</span>,
-                dan untuk aplikasi tambahan.
-              </p>
-
               <!-- BUTTON -->
-              <div style="margin:20px 0;">
-                <a href="https://example.com"
-                   style="background:#2563eb;
-                          color:#ffffff;
-                          padding:14px 32px;
-                          text-decoration:none;
-                          border-radius:8px;
-                          font-weight:bold;
-                          display:inline-block;">
-                  Download Now
-                </a>
-              </div>
-
-              <p style="font-size:12px;color:#777;">
-                Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
-              </p>
+              <a href="https://example.com"
+                 style="background:#2563eb;color:#fff;padding:14px 32px;text-decoration:none;border-radius:8px;display:inline-block;">
+                Download Now
+              </a>
 
             </td>
           </tr>
@@ -126,41 +102,41 @@ def build_html(receiver_email):
 </html>
 """
 
-# ================= ROUTES =================
+# ================= HOME =================
 @app.route("/")
 def home():
     return "API Running 🚀"
-
-# 🔍 DEBUG API KEY
-@app.route("/debug-key")
-def debug_key():
-    return {
-        "key": API_KEY
-    }
 
 # ================= SEND EMAIL =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
-        print("===== DEBUG START =====")
-        print("API KEY:", API_KEY)
 
         data = request.get_json()
-        print("BODY:", data)
 
         if not data:
             return jsonify({"error": "body kosong"}), 400
 
         to = data.get("to")
-        print("TO:", to)
+        device_id = data.get("device_id")
 
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
-        html = build_html(to)
+        # 🔥 GENERATE LICENSE
+        license_key = generate_key()
 
-        print("REQUEST KE RESEND...")
+        # 🔥 SAVE KE FIREBASE
+        db.reference("licenses").child(license_key).set({
+            "email": to,
+            "device_id": device_id if device_id else "",
+            "status": "active"
+        })
 
+        # 🔥 BUILD EMAIL
+        html = build_html(to, license_key)
+
+        # 🔥 SEND EMAIL
         res = requests.post(
             "https://api.resend.com/emails",
             headers={
@@ -170,31 +146,55 @@ def send_email():
             json={
                 "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
                 "to": [to],
-                "subject": "Download Verification Code",
+                "subject": "License Aktivasi",
                 "html": html
-            },
-            timeout=10
+            }
         )
 
-        print("STATUS CODE:", res.status_code)
-        print("RESPONSE:", res.text)
-
-        # 🔥 HANDLE ERROR BIAR JELAS
         if res.status_code != 200:
             return jsonify({
                 "status": "failed",
-                "code": res.status_code,
                 "response": res.text
             }), 500
 
         return jsonify({
-            "status": "sent",
-            "response": res.json()
+            "status": "success",
+            "license": license_key
         })
 
     except Exception as e:
-        print("ERROR DETAIL:", e)
         return jsonify({"error": str(e)}), 500
+
+
+# ================= LOGIN CHECK (DEVICE LOCK) =================
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    license_key = data.get("license")
+    device_id = data.get("device_id")
+
+    if not license_key or not device_id:
+        return jsonify({"status": "error"}), 400
+
+    ref = db.reference("licenses").child(license_key)
+    snap = ref.get()
+
+    if not snap:
+        return jsonify({"status": "invalid"}), 404
+
+    saved_device = snap.get("device_id")
+
+    # 🔥 FIRST BIND
+    if not saved_device:
+        ref.update({"device_id": device_id})
+        return jsonify({"status": "success", "msg": "first bind"})
+
+    # 🔥 DEVICE CHECK
+    if saved_device != device_id:
+        return jsonify({"status": "blocked", "msg": "device not allowed"}), 403
+
+    return jsonify({"status": "success", "msg": "login ok"})
 
 
 # ================= RUN =================
