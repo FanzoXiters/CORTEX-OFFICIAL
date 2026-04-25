@@ -10,89 +10,119 @@ API_KEY = os.getenv("RESEND_API_KEY")
 def build_html(receiver_email):
     return f"""
 <html>
-  <body style="margin:0;padding:0;background:#000000;font-family:Arial,sans-serif;">
+<head>
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#000000;">
-      <tr>
-        <td align="center" style="padding:30px 10px;">
+  <style>
+    @media (prefers-color-scheme: dark) {{
+      body {{
+        background:#121212 !important;
+      }}
+      .card {{
+        background:#1e1e1e !important;
+      }}
+      .text {{
+        color:#e5e5e5 !important;
+      }}
+      .muted {{
+        color:#b0b0b0 !important;
+      }}
+      .box {{
+        background:#2a2a2a !important;
+      }}
+    }}
+  </style>
+</head>
 
-          <!-- CARD -->
-          <table width="500" cellpadding="0" cellspacing="0"
-            style="background:#000000;border-radius:14px;padding:25px;">
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
 
-            <!-- TITLE -->
-            <tr>
-              <td align="center">
-                <h2 style="margin:0;color:#ffffff;font-weight:600;">
-                  Download Verification Code
-                </h2>
-                <p style="margin:8px 0 15px;color:#9aa0a6;font-size:13px;">
-                  {receiver_email}
-                </p>
-                <hr style="border:none;border-top:1px solid #222;">
-              </td>
-            </tr>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding:30px 10px;">
 
-            <!-- CONTENT -->
-            <tr>
-              <td style="text-align:center;padding:15px 10px;color:#d0d0d0;font-size:14px;line-height:1.6;">
+        <table width="500" cellpadding="0" cellspacing="0"
+          style="background:#ffffff;border-radius:14px;padding:25px;"
+          class="card">
 
-                <p>
-                  Terima kasih atas permintaan Anda untuk mengakses file kami.
-                  Kami menghargai kepercayaan Anda.
-                </p>
+          <!-- TITLE -->
+          <tr>
+            <td align="center">
+              <h2 style="margin:0;color:#111;font-weight:600;">
+                Download Verification Code
+              </h2>
 
-                <p>
-                  Silahkan download link berikut untuk Android dan Safari untuk IOS.
-                </p>
+              <p style="margin:8px 0 15px;color:#666;font-size:13px;">
+                {receiver_email}
+              </p>
 
-                <!-- KEY LICENSE -->
-                <div style="margin:15px 0;padding:10px;
-                            background:#111;
-                            border-radius:8px;
-                            font-size:13px;
-                            color:#aaa;">
-                  Key License:<br>
-                  <b style="color:#fff;">
-                    CX_{receiver_email[:5].upper()}_X9Z81A
-                  </b>
-                </div>
+              <hr style="border:none;border-top:1px solid #ddd;">
+            </td>
+          </tr>
 
-                <!-- TUTORIAL -->
-                <p style="font-size:13px;color:#aaa;">
-                  Silahkan klik link berikut untuk
-                  <span style="color:#3b82f6;">tutorial pemasangan</span>,
-                  dan untuk aplikasi tambahan.
-                </p>
+          <!-- CONTENT -->
+          <tr>
+            <td style="text-align:center;padding:15px 10px;color:#333;font-size:14px;line-height:1.6;">
 
-                <!-- BUTTON -->
-                <div style="margin:20px 0;">
-                  <a href="https://example.com"
-                     style="background:#3b82f6;
-                            color:#ffffff;
-                            padding:14px 32px;
-                            text-decoration:none;
-                            border-radius:8px;
-                            font-weight:bold;
-                            display:inline-block;">
-                    Download Now
-                  </a>
-                </div>
+              <p class="text" style="margin:10px 0;">
+                Terima kasih atas permintaan Anda untuk mengakses file kami.
+                Kami menghargai kepercayaan Anda.
+              </p>
 
-                <p style="font-size:12px;color:#777;">
-                  Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
-                </p>
+              <p class="text">
+                Silahkan download link berikut untuk Android dan Safari untuk iOS.
+              </p>
 
-              </td>
-            </tr>
+              <!-- KEY -->
+              <div style="margin:15px 0;padding:10px;
+                          background:#f0f0f0;
+                          border-radius:8px;
+                          font-size:13px;
+                          color:#333;"
+                   class="box">
 
-          </table>
+                Key License:<br>
 
-        </td>
-      </tr>
-    </table>
+                <b style="color:#2563eb;">
+                  CX_{receiver_email[:5].upper()}_X9Z81A
+                </b>
+              </div>
 
-  </body>
+              <!-- TUTORIAL -->
+              <p style="font-size:13px;color:#555;">
+                Silahkan klik link berikut untuk
+                <span style="color:#2563eb;">tutorial pemasangan</span>,
+                dan untuk aplikasi tambahan.
+              </p>
+
+              <!-- BUTTON -->
+              <div style="margin:20px 0;">
+                <a href="https://example.com"
+                   style="background:#2563eb;
+                          color:#ffffff;
+                          padding:14px 32px;
+                          text-decoration:none;
+                          border-radius:8px;
+                          font-weight:bold;
+                          display:inline-block;">
+                  Download Now
+                </a>
+              </div>
+
+              <p style="font-size:12px;color:#777;">
+                Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
+              </p>
+
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
 </html>
 """
 
