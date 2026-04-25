@@ -17,9 +17,11 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= LICENSE =================
 def generate_key():
-    return "CX_" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return "CX_" + "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=10)
+    )
 
-# ================= HTML KAMU (TIDAK DIUBAH UI SAMA SEKALI) =================
+# ================= HTML (TIDAK DIUBAH UI SAMA SEKALI) =================
 def build_html(receiver_email, license_key):
     return f"""
 <html>
@@ -139,7 +141,7 @@ def build_html(receiver_email, license_key):
 def home():
     return "API Running 🚀"
 
-# ================= SEND EMAIL (FIX UTAMA) =================
+# ================= SEND EMAIL =================
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
@@ -149,8 +151,8 @@ def send_email():
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
-        # 🔥 KEY SEKALI SAJA (FIX ERROR KAMU SEBELUMNYA)
-        license_key = generate_key()
+        # 🔥 FIX: generate 1x saja
+        license_key = generate_key().strip().upper()
 
         # SIMPAN KE SUPABASE
         supabase.table("licenses").insert({
@@ -201,6 +203,7 @@ def login():
         if not license_key or not device_id:
             return jsonify({"status": "error"}), 400
 
+        # 🔥 FIX PENTING: samakan format
         license_key = license_key.strip().upper()
 
         result = supabase.table("licenses").select("*").eq("license", license_key).execute()
@@ -211,12 +214,14 @@ def login():
         record = result.data[0]
         saved_device = record.get("device_id")
 
+        # FIRST BIND
         if not saved_device:
             supabase.table("licenses").update({
                 "device_id": device_id
             }).eq("license", license_key).execute()
             return jsonify({"status": "success", "msg": "first bind"})
 
+        # DEVICE CHECK
         if saved_device != device_id:
             return jsonify({"status": "blocked"}), 403
 
