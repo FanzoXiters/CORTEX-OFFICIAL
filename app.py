@@ -9,6 +9,7 @@ app = Flask(__name__)
 EMAIL = os.getenv("SMTP_EMAIL")
 APP_PASS = os.getenv("SMTP_APP_PASS")
 
+# ================= HTML TEMPLATE =================
 def build_html(receiver_email):
     return f"""
     <html>
@@ -44,6 +45,10 @@ def build_html(receiver_email):
                       </a>
                     </div>
 
+                    <p style="font-size:12px;color:#777;">
+                      Jika butuh bantuan, hubungi penjual.
+                    </p>
+
                   </td>
                 </tr>
 
@@ -55,26 +60,41 @@ def build_html(receiver_email):
     </html>
     """
 
-@app.route("/send-email", methods=["POST"])
-def send_email():
-    data = request.json
-    to = data.get("to")
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Download Verification Code"
-    msg["From"] = f"CORTEX OFFICIAL <{EMAIL}>"
-    msg["To"] = to
-
-    html = build_html(to)
-    msg.attach(MIMEText(html, "html"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(EMAIL, APP_PASS)
-        server.send_message(msg)
-
-    return jsonify({"status": "sent"})
-
+# ================= ROUTES =================
 @app.route("/")
 def home():
     return "API Running 🚀"
+
+@app.route("/send-email", methods=["POST"])
+def send_email():
+    try:
+        data = request.json
+        to = data.get("to")
+
+        if not to:
+            return jsonify({"error": "email kosong"}), 400
+
+        if not EMAIL or not APP_PASS:
+            return jsonify({"error": "SMTP belum diset"}), 500
+
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Download Verification Code"
+        msg["From"] = f"CORTEX OFFICIAL <{EMAIL}>"
+        msg["To"] = to
+
+        html = build_html(to)
+        msg.attach(MIMEText(html, "html"))
+
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(EMAIL, APP_PASS)
+            server.send_message(msg)
+
+        return jsonify({"status": "sent"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ================= RUN (WAJIB BUAT RAILWAY) =================
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
