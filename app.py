@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 import os
 
 app = Flask(__name__)
 
-EMAIL = os.getenv("SMTP_EMAIL")
-APP_PASS = os.getenv("SMTP_APP_PASS")
+API_KEY = os.getenv("RESEND_API_KEY")
 
 # ================= HTML TEMPLATE =================
 def build_html(receiver_email):
@@ -65,55 +62,44 @@ def build_html(receiver_email):
 def home():
     return "API Running 🚀"
 
-@app.route("/debug")
-def debug():
-    return {
-        "email": EMAIL,
-        "pass": APP_PASS
-    }
-
 @app.route("/send-email", methods=["POST"])
 def send_email():
     try:
         data = request.get_json()
-
         if not data:
             return jsonify({"error": "body kosong"}), 400
 
         to = data.get("to")
-
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
-        if not EMAIL or not APP_PASS:
-            return jsonify({"error": "SMTP belum diset"}), 500
-
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Download Verification Code"
-        msg["From"] = f"CORTEX OFFICIAL <{EMAIL}>"
-        msg["To"] = to
-
         html = build_html(to)
-        msg.attach(MIMEText(html, "html"))
 
-        # ================= SMTP =================
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-            print("CONNECT...")
-            server.starttls()
+        res = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": "CORTEX OFFICIAL <onboarding@resend.dev>",
+                "to": [to],
+                "subject": "Download Verification Code",
+                "html": html
+            },
+            timeout=10
+        )
 
-            print("LOGIN...")
-            server.login(EMAIL, APP_PASS)
-
-            print("SEND...")
-            server.send_message(msg)
-
-        return jsonify({"status": "sent"})
+        return jsonify({
+            "status": "sent",
+            "res": res.json()
+        })
 
     except Exception as e:
         print("ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 
-# ================= RUN (RAILWAY) =================
+# ================= RUN =================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
