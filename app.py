@@ -76,6 +76,7 @@ def debug():
 def send_email():
     try:
         data = request.get_json()
+
         if not data:
             return jsonify({"error": "body kosong"}), 400
 
@@ -95,13 +96,16 @@ def send_email():
         html = build_html(to)
         msg.attach(MIMEText(html, "html"))
 
+        # ================= SMTP =================
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-    print("CONNECT...")
-    server.starttls()
-    print("LOGIN...")
-    server.login(EMAIL, APP_PASS)
-    print("SEND...")
-    server.send_message(msg)
+            print("CONNECT...")
+            server.starttls()
+
+            print("LOGIN...")
+            server.login(EMAIL, APP_PASS)
+
+            print("SEND...")
+            server.send_message(msg)
 
         return jsonify({"status": "sent"})
 
@@ -109,6 +113,7 @@ def send_email():
         print("ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
-# ================= RUN =================
+
+# ================= RUN (RAILWAY) =================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
