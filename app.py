@@ -195,7 +195,7 @@ def send_email():
 @app.route("/login", methods=["POST"])
 def login():
     try:
-        data = request.get_json() or {}
+        data = request.form   # 🔥 INI WAJIB
 
         license_key = data.get("license")
         device_id = data.get("device_id")
@@ -203,7 +203,6 @@ def login():
         if not license_key or not device_id:
             return jsonify({"status": "error"}), 400
 
-        # 🔥 FIX PENTING: samakan format
         license_key = license_key.strip().upper()
 
         result = supabase.table("licenses").select("*").eq("license", license_key).execute()
@@ -214,18 +213,16 @@ def login():
         record = result.data[0]
         saved_device = record.get("device_id")
 
-        # FIRST BIND
         if not saved_device:
             supabase.table("licenses").update({
                 "device_id": device_id
             }).eq("license", license_key).execute()
-            return jsonify({"status": "success", "msg": "first bind"})
+            return jsonify({"status": "success"})
 
-        # DEVICE CHECK
         if saved_device != device_id:
             return jsonify({"status": "blocked"}), 403
 
-        return jsonify({"status": "success", "msg": "login ok"})
+        return jsonify({"status": "success"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
