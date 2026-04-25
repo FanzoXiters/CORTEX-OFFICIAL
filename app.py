@@ -10,29 +10,14 @@ from firebase_admin import credentials, db
 
 app = Flask(__name__)
 
-# ================= ENV =================
+# ================= RESEND =================
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
-FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
-FIREBASE_PRIVATE_KEY = os.getenv("FIREBASE_PRIVATE_KEY")
-FIREBASE_CLIENT_EMAIL = os.getenv("FIREBASE_CLIENT_EMAIL")
-FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
-
-# ================= VALIDASI ENV (BIAR TIDAK CRASH) =================
-if not all([FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, FIREBASE_DB_URL]):
-    raise Exception("❌ Firebase ENV belum lengkap di Railway")
-
-# ================= FIREBASE INIT =================
-cred = credentials.Certificate({
-    "type": "service_account",
-    "project_id": FIREBASE_PROJECT_ID,
-    "private_key": FIREBASE_PRIVATE_KEY.replace("\\n", "\n"),
-    "client_email": FIREBASE_CLIENT_EMAIL,
-    "token_uri": "https://oauth2.googleapis.com/token"
-})
+# ================= FIREBASE INIT (PAKAI FILE) =================
+cred = credentials.Certificate("account.json")
 
 firebase_admin.initialize_app(cred, {
-    "databaseURL": FIREBASE_DB_URL
+    "databaseURL": "https://cortex-project-e8bfd-default-rtdb.firebaseio.com/"
 })
 
 # ================= LICENSE GENERATOR =================
