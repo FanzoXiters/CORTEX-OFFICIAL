@@ -23,8 +23,8 @@ def generate_key():
     chars = string.ascii_uppercase + string.digits
     return "CX_" + "".join(random.choices(chars, k=10))
 
-# ================= HTML TEMPLATE (TIDAK DIUBAH SAMA SEKALI) =================
-def build_html(receiver_email):
+# ================= HTML TEMPLATE (UI TIDAK DIUBAH) =================
+def build_html(receiver_email, license_key):
     return f"""
 <html>
 <head>
@@ -98,15 +98,9 @@ def build_html(receiver_email):
                 Key License:<br>
 
                 <b style="color:#2563eb;">
-                  CX_{receiver_email[:5].upper()}_X9Z81A
+                  {license_key}
                 </b>
               </div>
-
-              <p style="font-size:13px;color:#555;">
-                Silahkan klik link berikut untuk
-                <span style="color:#2563eb;">tutorial pemasangan</span>,
-                dan untuk aplikasi tambahan.
-              </p>
 
               <div style="margin:20px 0;">
                 <a href="https://example.com"
@@ -143,14 +137,11 @@ def build_html(receiver_email):
 def home():
     return "API Running 🚀"
 
-# ================= GENERATE + SAVE LICENSE =================
+# ================= GENERATE =================
 @app.route("/generate", methods=["POST"])
 def generate():
 
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "body kosong"}), 400
-
     email = data.get("email")
     device_id = data.get("device_id")
 
@@ -178,16 +169,13 @@ def generate():
 def send_email():
 
     data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "body kosong"}), 400
-
     to = data.get("to")
 
     if not to:
         return jsonify({"error": "email kosong"}), 400
 
-    html = build_html(to)
+    license_key = generate_key()  # 🔥 RANDOM KEY DI SINI
+    html = build_html(to, license_key)
 
     res = requests.post(
         "https://api.resend.com/emails",
@@ -211,7 +199,7 @@ def send_email():
 
     return jsonify({
         "status": "sent",
-        "response": res.json()
+        "license": license_key
     })
 
 # ================= LOGIN =================
@@ -219,9 +207,6 @@ def send_email():
 def login():
 
     data = request.get_json()
-
-    if not data:
-        return jsonify({"status": "error"}), 400
 
     license_key = data.get("license")
     device_id = data.get("device_id")
@@ -237,15 +222,12 @@ def login():
     record = result.data[0]
     saved_device = record.get("device_id")
 
-    # FIRST BIND
     if not saved_device:
         supabase.table("licenses").update({
             "device_id": device_id
         }).eq("license", license_key).execute()
-
         return jsonify({"status": "success", "msg": "first bind"})
 
-    # DEVICE LOCK
     if saved_device != device_id:
         return jsonify({"status": "blocked"}), 403
 
