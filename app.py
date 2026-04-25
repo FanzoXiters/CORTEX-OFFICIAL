@@ -64,6 +64,12 @@ def build_html(receiver_email):
 @app.route("/")
 def home():
     return "API Running 🚀"
+    @app.route("/debug")
+def debug():
+    return {
+        "email": EMAIL,
+        "pass": APP_PASS
+    }
 
 @app.route("/send-email", methods=["POST"])
 def send_email():
