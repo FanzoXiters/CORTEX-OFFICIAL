@@ -9,53 +9,92 @@ API_KEY = os.getenv("RESEND_API_KEY")
 # ================= HTML TEMPLATE =================
 def build_html(receiver_email):
     return f"""
-    <html>
-      <body style="margin:0;padding:0;background:#000;font-family:Arial;">
-        <table width="100%" style="background:#000;">
-          <tr>
-            <td align="center" style="padding:30px;">
-              <table width="500" style="background:#000;border-radius:14px;padding:25px;">
-                
-                <tr>
-                  <td align="center">
-                    <h2 style="color:#fff;">Download Verification Code</h2>
-                    <p style="color:#aaa;">{receiver_email}</p>
-                    <hr style="border-top:1px solid #222;">
-                  </td>
-                </tr>
+<html>
+  <body style="margin:0;padding:0;background:#000000;font-family:Arial,sans-serif;">
 
-                <tr>
-                  <td style="text-align:center;color:#ccc;">
-                    
-                    <p>Silahkan download untuk Android / iOS</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#000000;">
+      <tr>
+        <td align="center" style="padding:30px 10px;">
 
-                    <div style="background:#111;padding:10px;border-radius:8px;">
-                      Key License:<br>
-                      <b style="color:#fff;">CX_{receiver_email[:5].upper()}_X9Z81A</b>
-                    </div>
+          <!-- CARD -->
+          <table width="500" cellpadding="0" cellspacing="0"
+            style="background:#000000;border-radius:14px;padding:25px;">
 
-                    <div style="margin:20px;">
-                      <a href="https://example.com"
-                         style="background:#3b82f6;color:#fff;padding:12px 25px;
-                                text-decoration:none;border-radius:8px;">
-                        Download Now
-                      </a>
-                    </div>
+            <!-- TITLE -->
+            <tr>
+              <td align="center">
+                <h2 style="margin:0;color:#ffffff;font-weight:600;">
+                  Download Verification Code
+                </h2>
+                <p style="margin:8px 0 15px;color:#9aa0a6;font-size:13px;">
+                  {receiver_email}
+                </p>
+                <hr style="border:none;border-top:1px solid #222;">
+              </td>
+            </tr>
 
-                    <p style="font-size:12px;color:#777;">
-                      Jika butuh bantuan, hubungi penjual.
-                    </p>
+            <!-- CONTENT -->
+            <tr>
+              <td style="text-align:center;padding:15px 10px;color:#d0d0d0;font-size:14px;line-height:1.6;">
 
-                  </td>
-                </tr>
+                <p>
+                  Terima kasih atas permintaan Anda untuk mengakses file kami.
+                  Kami menghargai kepercayaan Anda.
+                </p>
 
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    """
+                <p>
+                  Silahkan download link berikut untuk Android dan Safari untuk IOS.
+                </p>
+
+                <!-- KEY LICENSE -->
+                <div style="margin:15px 0;padding:10px;
+                            background:#111;
+                            border-radius:8px;
+                            font-size:13px;
+                            color:#aaa;">
+                  Key License:<br>
+                  <b style="color:#fff;">
+                    CX_{receiver_email[:5].upper()}_X9Z81A
+                  </b>
+                </div>
+
+                <!-- TUTORIAL -->
+                <p style="font-size:13px;color:#aaa;">
+                  Silahkan klik link berikut untuk
+                  <span style="color:#3b82f6;">tutorial pemasangan</span>,
+                  dan untuk aplikasi tambahan.
+                </p>
+
+                <!-- BUTTON -->
+                <div style="margin:20px 0;">
+                  <a href="https://example.com"
+                     style="background:#3b82f6;
+                            color:#ffffff;
+                            padding:14px 32px;
+                            text-decoration:none;
+                            border-radius:8px;
+                            font-weight:bold;
+                            display:inline-block;">
+                    Download Now
+                  </a>
+                </div>
+
+                <p style="font-size:12px;color:#777;">
+                  Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
+                </p>
+
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>
+"""
 
 # ================= ROUTES =================
 @app.route("/")
