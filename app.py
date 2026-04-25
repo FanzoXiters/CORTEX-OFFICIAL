@@ -17,10 +17,10 @@ def build_html(receiver_email):
   <style>
     @media (prefers-color-scheme: dark) {{
       body {{
-        background:#121212 !important;
+        background:#000000 !important;
       }}
       .card {{
-        background:#1e1e1e !important;
+        background:#000000 !important;
       }}
       .text {{
         color:#e5e5e5 !important;
@@ -35,7 +35,7 @@ def build_html(receiver_email):
   </style>
 </head>
 
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
 
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
