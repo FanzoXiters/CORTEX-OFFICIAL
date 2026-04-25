@@ -6,8 +6,8 @@ import os
 
 app = Flask(__name__)
 
-EMAIL = os.getenv("cikazoexe@gmail.com")
-APP_PASS = os.getenv("eiek ohhw tjvs cxhy")
+EMAIL = os.getenv("SMTP_EMAIL")
+APP_PASS = os.getenv("SMTP_APP_PASS")
 
 # ================= HTML TEMPLATE =================
 def build_html(receiver_email):
