@@ -53,7 +53,7 @@ def build_html(receiver_email, license_key, download_url):
 
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
-      <td align="center" style="padding:20px 10px;">
+      <td align="center" style="padding:0px 0px;">
 
         <table width="100%" cellpadding="0" cellspacing="0"
           style="background:#ffffff;border-radius:14px;padding:20px;"
