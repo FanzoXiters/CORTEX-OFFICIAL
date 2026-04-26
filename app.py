@@ -18,7 +18,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ================= LICENSE =================
 def generate_key():
     chars = string.ascii_letters + string.digits
-    return "CX_" + "".join(random.choice(chars) for _ in range(20))
+    return "CX_" + "".join(random.choice(chars) for _ in range(18))
 
 # ================= HTML (TIDAK DIUBAH UI SAMA SEKALI) =================
 def build_html(receiver_email, license_key, download_url):
@@ -160,7 +160,7 @@ def send_email():
         if not download_url:
             download_url = "https://example.com"  # default fallback
 
-        license_key = generate_key().strip().upper()
+        license_key = generate_key().strip()
 
         supabase.table("licenses").insert({
             "license": license_key,
