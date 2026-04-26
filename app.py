@@ -11,7 +11,9 @@ app = Flask(__name__)
 # ================= ENV =================
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPAae: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= LICENSE =================
 def generate_key():
@@ -81,7 +83,7 @@ def build_html(receiver_email, license_key, download_url):
               </p>
 
               <p class="text">
-                Silahkan download link berikut untuk Android dan ps:// untuk iOS.
+                Silahkan download link berikut untuk Android dan Safari untuk iOS.
               </p>
 
               <div style="margin:15px 0;padding:10px;
@@ -105,7 +107,7 @@ def build_html(receiver_email, license_key, download_url):
               </p>
 
               <div style="margin:20px 0;">
-                <a href="{download_url}">
+                <a href="{download_url}"
                    style="background:#2563eb;
                           color:#ffffff;
                           padding:14px 32px;
