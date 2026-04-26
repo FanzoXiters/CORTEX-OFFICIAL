@@ -224,15 +224,15 @@ def send_status_email(email, license_key, device_id):
   }}
 
   .container {{
-    max-width:500px;
+    max-width:100%;
     margin:auto;
-    padding:20px;
+    padding:0px;
   }}
 
   .card {{
     background:#ffffff;
     border:1px solid #ddd;
-    padding:20px;
+    padding:25px;
     border-radius:10px;
   }}
 
