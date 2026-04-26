@@ -212,7 +212,7 @@ def login():
         if not license_key or not device_id:
             return jsonify({"status": "error"}), 400
 
-        license_key = license_key.strip().upper()
+        license_key = license_key.strip()
 
         result = supabase.table("licenses").select("*").eq("license", license_key).execute()
 
