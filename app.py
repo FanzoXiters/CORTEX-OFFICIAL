@@ -66,7 +66,7 @@ def build_html(receiver_email, license_key, download_url):
                 Download Verification Code
               </h2>
 
-              <p style="margin:8px 0 15px;color:#666;font-size:13px;">
+              <p style="margin:8px 0 15px;color:#666;font-size:15px;">
                 {receiver_email}
               </p>
 
@@ -78,13 +78,14 @@ def build_html(receiver_email, license_key, download_url):
             <td style="text-align:center;padding:15px 10px;color:#333;font-size:14px;line-height:1.6;">
 
               <p class="text" style="margin:10px 0;">
-                Terima kasih atas permintaan Anda untuk mengakses file kami.
+                Terima kasih atas permintaan Anda untuk mengakses Aplikasi kami.
                 Kami menghargai kepercayaan Anda.
               </p>
 
               <p class="text">
-                Silahkan download link berikut untuk Android dan Safari untuk iOS.
+                Silahkan download link berikut untuk Android.
               </p>
+              
 
               <div style="margin:15px 0;padding:10px;
                           background:#f0f0f0;
@@ -106,11 +107,11 @@ def build_html(receiver_email, license_key, download_url):
                 dan untuk aplikasi tambahan.
               </p>
 
-              <div style="margin:20px 0;">
+              <div style="margin:15px 0;">
                 <a href="{download_url}"
                    style="background:#2563eb;
                           color:#ffffff;
-                          padding:14px 32px;
+                          padding:10px 40px;
                           text-decoration:none;
                           border-radius:8px;
                           font-weight:bold;
@@ -121,6 +122,10 @@ def build_html(receiver_email, license_key, download_url):
 
               <p style="font-size:12px;color:#777;">
                 Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
+              </p>
+              
+              <p style="font-size:10px;color:#777;">
+                ©CortexTools NewPatch
               </p>
 
             </td>
