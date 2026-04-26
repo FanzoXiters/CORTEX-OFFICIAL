@@ -6,6 +6,7 @@ import string
 import time
 from supabase import create_client, Client
 
+
 app = Flask(__name__)
 
 # ================= ENV =================
@@ -200,11 +201,156 @@ def send_email():
         return jsonify({"error": str(e)}), 500
 
 
+
+
+def send_status_email(email, license_key, device_id):
+
+    email = email.strip()
+
+    html = f"""
+<html>
+<head>
+
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+
+<style>
+  body {{
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+    background:#ffffff;
+    color:#111;
+  }}
+
+  .container {{
+    max-width:500px;
+    margin:auto;
+    padding:20px;
+  }}
+
+  .card {{
+    background:#ffffff;
+    border:1px solid #ddd;
+    padding:20px;
+    border-radius:10px;
+  }}
+
+  h2 {{
+    text-align:center;
+    margin:0;
+  }}
+
+  hr {{
+    border:none;
+    border-top:1px solid #ddd;
+    margin:15px 0;
+  }}
+
+  .btn {{
+    background:#e53935;
+    color:#fff;
+    padding:12px 25px;
+    text-decoration:none;
+    border-radius:8px;
+    display:inline-block;
+  }}
+
+  .center {{
+    text-align:center;
+  }}
+
+  .small {{
+    font-size:12px;
+    color:#888;
+  }}
+
+  @media (prefers-color-scheme: dark) {{
+    body {{
+      background:#000000 !important;
+      color:#e5e5e5 !important;
+    }}
+
+    .card {{
+      background:#121212 !important;
+      color:#e5e5e5 !important;
+      border:1px solid #333 !important;
+    }}
+
+    hr {{
+      border-top:1px solid #333 !important;
+    }}
+
+    a {{
+      color:#ffffff !important;
+    }}
+  }}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <h2>Selamat Key Berhasil Digunakan</h2>
+
+    <hr>
+
+    <p><b>Email:</b> {email}</p>
+    <p><b>Key License:</b> {license_key}</p>
+    <p><b>Device ID:</b> {device_id}</p>
+
+    <hr>
+
+    <p>
+      Klik di bawah jika Anda menggunakan HP baru untuk mereset device:
+    </p>
+
+    <div class="center" style="margin-top:20px;">
+      <a class="btn"
+         href="https://web-cortex.up.railway.app/reset-device?license={license_key}">
+        Reset Device
+      </a>
+    </div>
+
+    <p class="center small" style="margin-top:20px;">
+      © Copyright Cortex Official
+    </p>
+
+  </div>
+
+</div>
+
+</body>
+</html>
+"""
+
+    response = requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "from": "CORTEX OFFICIAL <developer@panjox.my.id>",
+            "to": [email],
+            "subject": "Login Success Notification",
+            "html": html
+        }
+    )
+
+    # optional debug biar kamu tau error
+    if not response.ok:
+        print("EMAIL ERROR:", response.text)
 # ================= LOGIN =================
 @app.route("/login", methods=["POST"])
 def login():
     try:
-        data = request.form   # 🔥 INI WAJIB
+        data = request.form
 
         license_key = data.get("license")
         device_id = data.get("device_id")
@@ -214,20 +360,39 @@ def login():
 
         license_key = license_key.strip()
 
-        result = supabase.table("licenses").select("*").eq("license", license_key).execute()
+        result = supabase.table("licenses") \
+            .select("*") \
+            .eq("license", license_key) \
+            .execute()
 
         if not result.data:
             return jsonify({"status": "invalid"}), 404
 
         record = result.data[0]
         saved_device = record.get("device_id")
+        email_sent = record.get("email_sent")  # 🔥 tambah flag
 
+        # ================= FIRST LOGIN =================
         if not saved_device:
             supabase.table("licenses").update({
                 "device_id": device_id
             }).eq("license", license_key).execute()
+
+            # 🔥 ANTI SPAM EMAIL (CUMA SEKALI)
+            if not email_sent:
+                send_status_email(
+                    record["email"],
+                    license_key,
+                    device_id
+                )
+
+                supabase.table("licenses").update({
+                    "email_sent": True
+                }).eq("license", license_key).execute()
+
             return jsonify({"status": "success"})
 
+        # ================= DEVICE CHECK =================
         if saved_device != device_id:
             return jsonify({"status": "blocked"}), 403
 
