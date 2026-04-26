@@ -49,14 +49,14 @@ def build_html(receiver_email, license_key, download_url):
   </style>
 </head>
 
-<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
+<body style="margin:0;padding:0;background:transparent;font-family:Arial,sans-serif;">
 
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
-      <td align="center" style="padding:30px 10px;">
+      <td align="center" style="padding:20px 10px;">
 
-        <table width="500" cellpadding="0" cellspacing="0"
-          style="background:#ffffff;border-radius:14px;padding:25px;"
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#ffffff;border-radius:14px;padding:20px;"
           class="card">
 
           <tr>
@@ -86,19 +86,19 @@ def build_html(receiver_email, license_key, download_url):
               </p>
               
 
-              <div style="margin:15px 0;padding:10px;
-                          background:#f0f0f0;
-                          border-radius:8px;
-                          font-size:13px;
-                          color:#333;"
-                   class="box">
+<div style="margin:15px 0;padding:10px;  
+                      background:#f0f0f0;  
+                      border-radius:8px;  
+                      font-size:13px;  
+                      color:#333;"  
+               class="box">  
 
-                License:<br>
+            Key License:<br>  
 
-                <b style="color:#2563eb;">
-                  {license_key}
-                </b>
-              </div>
+            <b style="color:#2563eb;">  
+              {license_key}  
+            </b>  
+          </div>  
 
               <p style="font-size:13px;color:#555;margin-top:10px;">
                 Silahkan klik link berikut untuk
@@ -110,7 +110,7 @@ def build_html(receiver_email, license_key, download_url):
                 <a href="{download_url}"
                    style="background:#2563eb;
                           color:#ffffff;
-                          padding:10px 40px;
+                          padding:10px 60px;
                           text-decoration:none;
                           border-radius:8px;
                           font-weight:bold;
@@ -119,7 +119,7 @@ def build_html(receiver_email, license_key, download_url):
                 </a>
               </div>
 
-              <p style="font-size:12px;color:#777;">
+              <p style="font-size:13px;color:#777;">
                 Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
               </p>
               
