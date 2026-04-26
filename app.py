@@ -18,7 +18,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ================= LICENSE =================
 def generate_key():
     chars = string.ascii_letters + string.digits
-    return "Cx_" + "".join(random.choice(chars) for _ in range(18))
+    return "Cx_" + "".join(random.choice(chars) for _ in range(16))
 
 # ================= HTML (TIDAK DIUBAH UI SAMA SEKALI) =================
 def build_html(receiver_email, license_key, download_url):
@@ -239,4 +239,4 @@ def login():
 
 # ================= RUN =================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))00)))
