@@ -17,9 +17,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================= LICENSE =================
 def generate_key():
-    return "CX_" + "".join(
-        random.choices(string.ascii_uppercase + string.digits, k=10)
-    )
+    chars = string.ascii_letters + string.digits
+    return "CX_" + "".join(random.choice(chars) for _ in range(20))
 
 # ================= HTML (TIDAK DIUBAH UI SAMA SEKALI) =================
 def build_html(receiver_email, license_key, download_url):
@@ -94,7 +93,7 @@ def build_html(receiver_email, license_key, download_url):
                           color:#333;"
                    class="box">
 
-                Key License:<br>
+                License:<br>
 
                 <b style="color:#2563eb;">
                   {license_key}
