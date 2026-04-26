@@ -22,7 +22,7 @@ def generate_key():
     )
 
 # ================= HTML (TIDAK DIUBAH UI SAMA SEKALI) =================
-def build_html(receiver_email, license_key):
+def build_html(receiver_email, license_key, download_url):
     return f"""
 <html>
 <head>
@@ -83,7 +83,7 @@ def build_html(receiver_email, license_key):
               </p>
 
               <p class="text">
-                Silahkan download link berikut untuk Android dan Safari untuk iOS.
+                Silahkan download link berikut untuk Android dan ps:// untuk iOS.
               </p>
 
               <div style="margin:15px 0;padding:10px;
@@ -107,7 +107,7 @@ def build_html(receiver_email, license_key):
               </p>
 
               <div style="margin:20px 0;">
-                <a href="https://example.com"
+                <a href="{download_url}
                    style="background:#2563eb;
                           color:#ffffff;
                           padding:14px 32px;
@@ -146,24 +146,28 @@ def home():
 def send_email():
     try:
         data = request.get_json() or {}
+
         to = data.get("to")
+        download_url = data.get("download_url")  # 🔥 TAMBAH INI
 
         if not to:
             return jsonify({"error": "email kosong"}), 400
 
-        # 🔥 FIX: generate 1x saja
+        if not download_url:
+            download_url = "https://example.com"  # default fallback
+
         license_key = generate_key().strip().upper()
 
-        # SIMPAN KE SUPABASE
         supabase.table("licenses").insert({
             "license": license_key,
             "email": to,
             "device_id": "",
+            "download_url": download_url,   # 🔥 SIMPAN APK YANG DIPILIH ADMIN
             "status": "active",
             "created": int(time.time())
         }).execute()
 
-        html = build_html(to, license_key)
+        html = build_html(to, license_key, download_url)
 
         res = requests.post(
             "https://api.resend.com/emails",
@@ -184,7 +188,8 @@ def send_email():
 
         return jsonify({
             "status": "sent",
-            "license": license_key
+            "license": license_key,
+            "download_url": download_url
         })
 
     except Exception as e:
