@@ -56,7 +56,7 @@ def build_html(receiver_email, license_key, download_url):
       <td align="center" style="padding:0px 0px;">
 
         <table width="100%" cellpadding="0" cellspacing="0"
-          style="background:#ffffff;border-radius:14px;padding:20px;"
+          style="background:#ffffff;border-radius:14px;padding:25px;"
           class="card">
 
           <tr>
@@ -86,10 +86,10 @@ def build_html(receiver_email, license_key, download_url):
               </p>
               
 
-<div style="margin:15px 0;padding:10px;  
+<div style="margin:15px 0;padding:8px;  
                       background:#f0f0f0;  
                       border-radius:8px;  
-                      font-size:13px;  
+                      font-size:12px;  
                       color:#333;"  
                class="box">  
 
@@ -123,7 +123,7 @@ def build_html(receiver_email, license_key, download_url):
                 Jika Anda membutuhkan bantuan, silahkan hubungi penjual.
               </p>
               
-              <p style="font-size:10px;color:#777;">
+              <p style="font-size:11px;color:#777;">
                 ©CortexTools NewPatch
               </p>
 
